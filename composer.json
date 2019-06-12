@@ -1,6 +1,6 @@
 {
     "name": "slaughter550/jenkins-autoscale-kubernetes",
-    "description": "",
+    "description": "Automate the number of available executors in Jenkins dervied from queue length",
     "keywords": ["jenkins", "autoscale", "kubernetes"],
     "license": "MIT",
     "type": "project",

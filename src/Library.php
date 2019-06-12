@@ -12,10 +12,7 @@ class Library
 
     public static function canRun(): bool
     {
-        $statusFile = __DIR__ . self::$holdingFile;
-        if (file_exists($statusFile)) {
-            return false;
-        }
+        return ! file_exists(self::getStatusFilePath());
     }
 
     public static function getBusyExecutors(): float
@@ -38,9 +35,14 @@ class Library
         return self::getData('queueLength');
     }
 
+    public static function getStatusFilePath()
+    {
+        return __DIR__ . self::$holdingFile;
+    }
+
     public static function report()
     {
-        self::Slack()->from('Jenkins Ops')->to('#dev-pulse')->attach([
+        self::Slack()->attach([
             'color' => 'good',
             'text' => "Online = Number of registered executors\nBusy = Number of executers with a job\nQueue = Number of jobs in the queue waiting for execution",
             'fields' => [
@@ -70,7 +72,12 @@ class Library
 
     public static function Slack()
     {
-        return new Client('https://hooks.slack.com/services/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');
+        $settings = require __DIR__ . '/../config/slack.php';
+
+        $url = $settings['endpoint'];
+        unset($settings['endpoint']);
+
+        return new Client($url, $settings);
     }
 
     private static function getData($param): float
@@ -79,6 +86,6 @@ class Library
             self::$data = json_decode(file_get_contents('/tmp/jenkins-output.json'), true);
         }
 
-        return round($data[$param]['sec10']['latest'], 1);
+        return round(self::$data[$param]['sec10']['latest'], 1);
     }
 }

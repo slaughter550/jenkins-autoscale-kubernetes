@@ -10,6 +10,7 @@ if (! Library::canRun()) {
 
 $clusterName = "pdx1b-build";
 $templateName = "pdx1b-build-n1-standard8";
+$maxWorkers = 16;
 
 $num = null;
 $workers = Library::getNumWorkers();
@@ -17,7 +18,7 @@ $queueLength = Library::getQueueLength();
 $busyExecutors = Library::getBusyExecutors();
 $onlineExecutors = Library::getOnlineExecutors();
 
-$status = "Nodes: $workers - Online: $onlineExecutors - Busy: $busyExecutors - Queue: $queueLength";
+$status = "Nodes: $workers - Online: $onlineExecutors - Busy: $busyExecutors - Queue: $queueLength\n";
 echo($status);
 
 if ($workers > 0 && $queueLength == 0 && $busyExecutors == 0) {
@@ -30,20 +31,20 @@ if ($workers > 0 && $queueLength == 0 && $busyExecutors == 0) {
     $num = 1;
 }
 
-if ($num !== null && $num <= 16) {
-    $this->report($workers, $onlineExecutors, $busyExecutors, $queueLength);
+if ($num !== null && $num <= $maxWorkers) {
+    Library::report();
     try {
-        touch($statusFile);
+        touch(Library::getStatusFilePath());
         shell_exec("gcloud container clusters resize $clusterName --node-pool $templateName --size $num");
 
-        $old = $workers . " " . str_plural('worker', $workers);
-        $new = $num . " " . str_plural('worker', $num);
+        $old = $workers . " worker" . ($workers == 1 ? '' : 's');
+        $new = $num . " worker" . ($num == 1 ? '' : 's');
 
         $message = "\n[Auto] Changed Jenkins from $old => $new";
-        Library::Slack()->from('Jenkins Ops')->to('#dev-jenkins')->send($message);
+        Library::Slack()->send($message);
     } catch (Exception $e) {
-        Library::Slack()->from('Jenkins Ops')->to('#dev-jenkins')->send($e->getMessage());
+        Library::Slack()->send($e->getMessage());
     } finally {
-        @unlink($statusFile);
+        @unlink(Library::getStatusFilePath());
     }
 }
