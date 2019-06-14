@@ -8,8 +8,8 @@ if (! Library::canRun()) {
     exit('There is already a thread running');
 }
 
-$clusterName = "pdx1b-build";
-$templateName = "pdx1b-build-n1-standard8";
+$clusterName = "your cluster";
+$templateName = "your template";
 $maxWorkers = 16;
 
 $num = null;

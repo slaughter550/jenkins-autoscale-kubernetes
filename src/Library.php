@@ -35,6 +35,13 @@ class Library
         return self::getData('queueLength');
     }
 
+    public static function getSetting($name)
+    {
+        $settings = require __DIR__ . '/../config/settings.php';
+
+        return $settings['name'];
+    }
+
     public static function getStatusFilePath()
     {
         return __DIR__ . self::$holdingFile;
@@ -72,7 +79,7 @@ class Library
 
     public static function Slack()
     {
-        $settings = require __DIR__ . '/../config/slack.php';
+        $settings = self::getSetting('slack');
 
         $url = $settings['endpoint'];
         unset($settings['endpoint']);
